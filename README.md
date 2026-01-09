@@ -5,7 +5,7 @@ This is a GitHub Template Repo that you have used to create your own Custom, Dep
 ## Template Setup Instructions
 
 1. **Create a new repo using this template and clone it** (you're off to a great start!)
-2. **Configure the Makefile** to provide the ghcr image name in `make container`
+2. **Configure the Makefile** - Update `CONTAINER_IMAGE` with your GHCR image name (see [Customizing the Makefile](#customizing-the-makefile) below)
 3. **Configure the Dockerfile** to install any CLI utilities your scripts may need (GitHub CLI, AWS CLI, etc.)
 4. **Configure the docker-compose.yaml** to use the ghcr image you build
 5. **Configure the GitHub Action docker-push workflow** to push your ghcr package
@@ -39,11 +39,44 @@ make container
 make open
 
 # Validate a runbook (assumes API is running in dev mode)
-RUNBOOK=./runbooks/test-a-book.md ENV="[]" make validate
+make validate RUNBOOK=./runbooks/test-a-book.md
 
-# Execute a runbook (assumes API is running)
-RUNBOOK=./runbooks/test-a-book.md ENV="[]" make execute
+# Execute a runbook with environment variables (assumes API is running)
+make execute RUNBOOK=./runbooks/test-a-book.md ENV='VAR1=value1 VAR2=value2'
 ```
+
+---
+
+# Customizing the Makefile
+
+The Makefile provides simple commands for testing runbooks using `curl` (no Python CLI required). Customize it for your organization:
+
+## Required Customizations
+
+1. **Update the container image name** (line ~12):
+   ```makefile
+   CONTAINER_IMAGE ?= ghcr.io/YOUR_ORG/YOUR_RUNBOOKS_IMAGE:latest
+   ```
+   Replace `YOUR_ORG` and `YOUR_RUNBOOKS_IMAGE` with your GitHub organization and image name.
+
+2. **Update docker-compose.prod.yaml references** if you've customized your production compose file.
+
+## Optional Customizations
+
+- **Change API URL**: If you're running the API on a different host/port, update `API_URL`
+- **Add custom commands**: Add team-specific make targets for common workflows
+- **Customize token roles**: Modify the `get-token` target to request different roles
+
+## How It Works
+
+The Makefile uses `curl` to interact with the API:
+- `make dev` - Starts docker-compose with your local runbooks mounted
+- `make validate` - Gets a dev token, then calls the validate API endpoint
+- `make execute` - Gets a dev token, then calls the execute API endpoint
+- `make container` - Builds your custom container with runbooks
+- `make deploy` - Deploys using your packaged container
+
+All commands work without requiring Python or the CLI tool - just `make`, `curl`, and `jq` (for JSON formatting).
 
 ---
 
