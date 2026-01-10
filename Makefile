@@ -33,10 +33,11 @@ help:
 	@echo "  make deploy"
 
 # Start API server with local runbooks mounted (for runbook authors)
+# NOTE: Make sure docker-compose.yaml is configured for development (volume mounts enabled)
 api:
 	@$(MAKE) down || true
 	@echo "Starting API server with local runbooks mounted..."
-	@docker-compose -f samples/docker-compose.dev.yaml up -d
+	@docker-compose up -d
 	@echo "Waiting for API to be ready..."
 	@timeout 30 bash -c 'until curl -sf http://localhost:8083/metrics > /dev/null; do sleep 1; done' || true
 	@echo "API is ready at http://localhost:8083"
@@ -45,7 +46,7 @@ api:
 	@echo "Use 'make down' to stop the API"
 
 down:
-	@docker-compose -f samples/docker-compose.dev.yaml down
+	@docker-compose down
 
 open:
 	@echo "Opening web UI..."
@@ -85,9 +86,13 @@ container:
 	@echo "Built: $(CONTAINER_IMAGE)"
 
 # Deploy using packaged runbooks
+# NOTE: Make sure docker-compose.yaml is configured for production:
+#   - Image name matches CONTAINER_IMAGE above
+#   - Packaged runbooks mode enabled (RUNBOOKS_DIR: ./runbooks, working_dir: /opt/stage0/runner)
+#   - Volume mounts commented out
 deploy:
 	@echo "Deploying with packaged runbooks..."
-	@sed "s|ghcr.io/YOUR_ORG/YOUR_RUNBOOKS_IMAGE:latest|$(CONTAINER_IMAGE)|g" \
-		samples/docker-compose.prod.yaml > docker-compose.prod.yaml
-	@docker-compose -f docker-compose.prod.yaml up -d
+	@docker-compose up -d
+	@echo "Waiting for services to be ready..."
+	@timeout 30 bash -c 'until curl -sf http://localhost:8083/metrics > /dev/null; do sleep 1; done' || true
 	@echo "Deployment complete. API at http://localhost:8083, UI at http://localhost:8084"
