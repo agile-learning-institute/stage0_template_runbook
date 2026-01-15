@@ -3,6 +3,11 @@
 # and runbooks into a custom container image. 
 #
 # Base image includes: Python 3.12, Flask API, Gunicorn, Prometheus metrics
+#
+# Build Layering Strategy:
+# - Dependencies are installed first (cached unless base image changes)
+# - Directory structure is created next (cached unless dependencies change)
+# - Runbooks are copied LAST (most frequently changing, rebuilds on every change)
 
 FROM ghcr.io/agile-learning-institute/stage0_runbook_api:latest
 
@@ -87,19 +92,23 @@ FROM ghcr.io/agile-learning-institute/stage0_runbook_api:latest
 #     rm -rf /var/lib/apt/lists/*
 
 ##################################
-# REQUIRED: Package Your Runbooks
-# This section copies your runbooks into the container
-# Adjust the destination path if needed
+# Create runbooks directory (cached unless dependencies change)
+# This layer will be reused when only runbooks change
 ##################################
-# Create directory for runbooks (matches production working directory)
 RUN mkdir -p /opt/stage0/runner/runbooks
 
-# Copy runbooks folder into the container
-# Assumes runbooks are in ./runbooks/ relative to build context
-COPY ./runbooks/ /opt/stage0/runner/runbooks/
-
-# Set working directory (matches docker-compose.yaml configuration)
+##################################
+# Set working directory (cached unless directory structure changes)
+# This layer will be reused when only runbooks change
+##################################
 WORKDIR /opt/stage0/runner
+
+##################################
+# REQUIRED: Copy runbooks LAST (most frequently changing layer)
+# This is the only layer that rebuilds when runbooks change
+# Assumes runbooks are in ./runbooks/ relative to build context
+##################################
+COPY ./runbooks/ /opt/stage0/runner/runbooks/
 
 ##################################
 # OPTIONAL: Verify Installation
