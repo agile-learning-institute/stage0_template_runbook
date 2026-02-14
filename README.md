@@ -12,7 +12,7 @@ This is a GitHub Template Repository for creating your own runbook collection us
 5. **Make your Container**: Create your runbooks, and use the commands below to validate, test, and package your runbook for deployment.
 
 ## Runbook Author Guide
-Welcome team member, this is where we document our operational processes, i.e. This is where the [./runbooks](./runbooks/) are. Runbooks are just markdown files. To make your runbooks executable with the Runbook Automation tools follow [these guidelines](https://github.com/agile-learning-institute/stage0_runbook_api/blob/main/RUNBOOK.md). 
+Welcome team member, this is where we document our operational processes, i.e. This is where the [./runbooks](./runbooks/) are. Runbooks are just markdown files. To make your runbooks executable with the Runbook Automation tools follow [these guidelines](https://github.com/agile-learning-institute/stage0_runbook_api/blob/main/RUNBOOK.md). **Note:** Environment variable descriptions in the Environment Requirements section are YAML—avoid unquoted special characters like `:` in descriptions, or use quotes. 
 
 ## Runbook Developer Commands
 ```sh
